@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<title>MRR Churn Rates | ChartMogul</title>
+    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	</head>
+
+	<body>
+		<h1>ChartMogul</h1>
+		<p>Your Top 3 Highest MRR Churn Rates</p>
+		<div id="results"></div>
+
+    	<script>
+			// YOUR VALUES GO HERE:
+			var TOKEN = 'YOUR_ACCOUNT_TOKEN'; //Replace with your Account Token
+			var SECRET = 'YOUR_SECRET_KEY'; //Replace with your Secret Key
+			var START_DATE = '2014-08-01'; //Add your start date YYYY-MM-DD
+			var END_DATE = '2015-07-31'; //Add your end date YYYY-MM-DD
+			// END (YOUR VALUES) 
+
+
+
+			function fetchMRR(startDate, endDate) {
+				$.ajax({
+					method: 'GET',
+					url: 'https://api.chartmogul.com/v1/metrics/mrr-churn-rate',
+					headers: {
+						'Authorization': 'Basic ' + btoa(TOKEN + ':' + SECRET)
+					},
+					data: {
+						'start-date': startDate,
+						'end-date': endDate
+					},
+					success: retrievedMRR,
+					error: fetchFailed
+				});
+			}
+
+			function fetchFailed() {
+				var html = '<p style="color:red">API request failed! Please ensure your Account Token and Secret Key are correctly entered.</p>';
+				$('#results').html(html);
+			}
+
+			function retrievedMRR(data) {
+			 	var entries = data.entries;
+			 	sortEntries(entries);
+				entries = entries.slice(0,3);
+				displayTopMRR(entries);
+			}
+
+			function sortEntries(entries) {
+				entries.sort(function (a, b) {
+					if (a['mrr-churn-rate'] < b['mrr-churn-rate']) {
+						return 1;
+					}
+					if (a['mrr-churn-rate'] > b['mrr-churn-rate']) {
+						return -1;
+					}
+					return 0;
+				});
+			}
+
+			function displayTopMRR(entries) {
+				var resultsHTML = '<ul>';
+				$.each(entries, function(i, entry){
+					resultsHTML += '<li>On ';
+					resultsHTML += entry.date;
+					resultsHTML += ' the churn rate was ';
+					resultsHTML += entry['mrr-churn-rate'];
+					resultsHTML += '%';
+					resultsHTML += '</li>';
+				});
+				resultsHTML += '</ul>';
+				$('#results').html(resultsHTML);
+			}
+
+			fetchMRR(START_DATE, END_DATE);
+    	</script>
+	</body>
+</html>
